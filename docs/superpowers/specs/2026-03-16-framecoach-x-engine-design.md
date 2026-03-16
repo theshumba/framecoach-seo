@@ -48,7 +48,7 @@ GitHub Actions (cron: 5x daily)
 
 - 3-4 evergreen tweets from the bank (proven content, always relevant)
 - 1-2 trending tweets generated fresh from current film news
-- Per-run decision: random weighted ~65% evergreen / ~35% trending
+- Per-run decision: random weighted ~65% evergreen / ~35% trending (configurable in `config/strategy.json`)
 - Ensures feed stays relevant without becoming a news aggregator
 
 ## RSS Feeds
@@ -79,6 +79,7 @@ Output: Selected article + angle for filmmakers
 - Must relate to filmmaking craft, gear, technique, or industry
 - Filters out entertainment gossip, box office reports, celebrity news
 - Returns: topic, angle, reasoning, relevant article index
+- 7-second delay between Gemini API calls (respects free tier 10 RPM limit)
 
 ### Step 2: Tweet Generation
 
@@ -124,6 +125,7 @@ DO NOT:
 - Force a FrameCoach plug into every tweet
 - Use more than 2 hashtags per tweet
 - Use emojis excessively (1-2 max per tweet)
+- Generate or reference any URLs other than https://framecoach.io or https://theshumba.github.io/framecoach-blog/
 ```
 
 ## State Management
@@ -157,7 +159,7 @@ Caches recent RSS articles to avoid re-fetching within same day:
 }
 ```
 
-Both files committed to git after each successful post.
+Both files committed to git after each successful post. `trending-cache.json` has a 6-hour TTL — if older than 6 hours, RSS feeds are re-fetched.
 
 ## File Structure
 
@@ -178,12 +180,14 @@ framecoach-x-engine/
 │   └── logger.js                 # pino logging
 ├── config/
 │   ├── feeds.json                # RSS feed URLs + keywords
+│   ├── strategy.json             # Evergreen/trending ratio + configurable params
 │   └── brand-voice.md            # Gemini system prompt
 ├── state/
 │   ├── posted-log.json           # Posted history + cycle tracking
 │   └── trending-cache.json       # RSS article cache
 ├── tweets/
 │   └── evergreen-bank.json       # 50 pre-written tweets
+├── .gitignore
 ├── package.json
 └── README.md
 ```
@@ -199,7 +203,16 @@ on:
     - cron: '0 14 * * *'
     - cron: '0 17 * * *'
     - cron: '0 20 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without posting to X'
+        type: boolean
+        default: false
+
+concurrency:
+  group: post-tweet
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -248,7 +261,7 @@ jobs:
 ```json
 {
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
+    "@google/genai": "^1.44.0",
     "oauth-1.0a": "^2.2.6",
     "rss-parser": "^3.13.0",
     "pino": "^9.0.0",
@@ -266,10 +279,10 @@ Note: Using `oauth-1.0a` + native `fetch` instead of `tweepy` (Python) since the
 | All RSS feeds fail | Falls back to evergreen tweet |
 | Gemini API fails/timeout | Falls back to evergreen tweet |
 | Generated tweet fails validation | Falls back to evergreen tweet |
-| X API post fails | Logs error, exits with code 1 (GitHub shows failed run) |
-| All evergreen tweets posted | Resets cycle counter, starts over in random order |
+| X API post fails | Retry with exponential backoff (3 attempts, 2s base). If all fail, log error and exit with code 1 |
+| All evergreen tweets posted | Resets cycle, excludes last 10 posted from first picks to avoid quick repeats |
 | Duplicate tweet detected | Regenerates (max 2 attempts), then falls back to evergreen |
-| Git push conflict | `git pull --rebase` resolves (state files are append-only) |
+| Git push conflict | Prevented by `concurrency` group serializing workflow runs |
 | GitHub Actions disabled (60d inactivity) | Not possible — runs 5x daily |
 
 ## Cost Analysis

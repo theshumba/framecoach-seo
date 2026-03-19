@@ -1,0 +1,27 @@
+# FrameCoach - framecoach.io
+# Allow all crawlers including AI systems
+
+User-agent: *
+Allow: /
+
+# Explicitly allow AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://www.framecoach.io/sitemap.xml
+Sitemap: https://theshumba.github.io/framecoach-blog/sitemap.xml

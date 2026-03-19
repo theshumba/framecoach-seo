@@ -1,0 +1,30 @@
+# FrameCoach
+> The decision layer for your camera
+
+FrameCoach is a free, real-time camera coaching app for indie filmmakers and content creators. It guides users through ISO, aperture, shutter speed, white balance, and composition decisions while on set — so filmmakers can focus on telling their story instead of second-guessing settings.
+
+## What FrameCoach Does
+- Real-time camera settings coaching on set
+- Shot composition and framing guidance
+- Scene-aware decision support for lighting and exposure
+- Plain-language explanations of cinematography concepts
+- Camera settings memory across shooting scenarios
+
+## Who It's For
+Solo filmmakers, indie crews, content creators, and film students who don't have a dedicated camera department.
+
+## Key Differentiator
+Most filmmaking apps are tools (calculators, monitors, shot list managers). FrameCoach is a coach — it tells you what your settings should be for the look you want, and explains why in plain language.
+
+## Pricing
+Free. No subscription, no paywall, no hidden fees.
+
+## Links
+- Website: https://framecoach.io
+- Blog: https://theshumba.github.io/framecoach-blog/
+- FAQ: https://theshumba.github.io/framecoach-blog/filmmaking-faq/
+- Camera Settings Guide: https://theshumba.github.io/framecoach-blog/camera-settings-guide/
+- Twitter/X: https://x.com/framecoachapp
+
+## Founded By
+Melusi — building tools to make camera knowledge accessible to every filmmaker.
